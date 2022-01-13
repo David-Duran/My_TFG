@@ -21,7 +21,7 @@ class TraindataFromTrack3(data.Dataset):
     def __init__(self):
         super(TraindataFromTrack3, self).__init__()
 
-        self.image_folder = "dataset/track3_train"
+        self.image_folder = "datasets/track3_train"
         self.image_filenames_input = [join(self.image_folder, x) for x in listdir(self.image_folder) if
                                       self.is_image_file(x)]
 

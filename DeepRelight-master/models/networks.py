@@ -274,13 +274,12 @@ class BP_HDR(nn.Module):
                 ResnetBlock(ngf * mult, padding_type=padding_type, activation=activation, norm_layer=norm_layer)]
 
         ### upsample
-        Decoder = []
-        for i in range(n_downsampling):
-            mult = 2 ** (n_downsampling - i)
-            # model += [nn.ConvTranspose2d(ngf * mult, int(ngf * mult / 2), kernel_size=3, stride=2, padding=1,
-            #                              output_padding=1),
-            #           norm_layer(int(ngf * mult / 2)), activation]
-            Decoder += [UpBlock(ngf * mult)]
+        Decoder = [
+          UpBlock(512, 256//2),
+          UpBlock(256, 128//2),
+          UpBlock(128, 64//2),
+          UpBlock(64)
+        ]
         #Decoder += [nn.ReflectionPad2d(3), nn.Conv2d(ngf, output_nc, kernel_size=7, padding=0), nn.Tanh()]
 
         self.inlayer = nn.Sequential(*Inlayer)
@@ -294,15 +293,25 @@ class BP_HDR(nn.Module):
 
 
     def forward(self, input):
-        m_in = self.inlayer(input)
-        m = self.encoder(m_in)
-        m = self.manipulate(m)
-        m = self.decoder(m)
-        #m = self.dropout(m)
-        m = torch.cat([m_in,m],dim=1)
-        m = self.shortconect(m)
-        #out = self.out(m)
-        return m
+        def forward(self, input):
+            m = self.inlayer(input)
+            print(m.size())
+            s = [m]
+            for down in self.encoder:
+                m = down(m)
+                print(m.size())
+                s.append(m)
+            s = reversed(s[:-1])
+            m = self.manipulate(m)
+            for up, sk in zip(self.decoder, s):
+                m = up(m)
+                print(m.size())
+                m = torch.cat([sk, m], dim=1)
+                print(m.size())
+            # m = self.dropout(m)
+            m = self.shortconect(m)
+            # out = self.out(m)
+            return m
 
     # Define a resnet block
 

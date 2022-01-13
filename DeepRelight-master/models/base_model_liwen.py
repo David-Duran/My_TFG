@@ -4,9 +4,9 @@ from torch.nn import functional as F
 ##from deform_conv_v2 import DeformConv2d
 
 class UpBlock(torch.nn.Module):
-    def __init__(self, input_size):
+    def __init__(self, input_size, output_size=-1):
         super(UpBlock, self).__init__()
-        output_size = input_size//2
+        if output_size == -1: output_size = input_size//2
         self.conv1 = DeconvBlock(input_size, output_size, kernel_size=4, stride=2, padding=1, bias=True)
         self.conv2 = ConvBlock(output_size, output_size, kernel_size=3, stride=2, padding=1, bias=True)
         self.conv3 = DeconvBlock(output_size, output_size, kernel_size=4, stride=2, padding=1, bias=True)
