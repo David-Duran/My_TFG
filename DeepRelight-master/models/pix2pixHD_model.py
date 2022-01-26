@@ -199,7 +199,7 @@ class Pix2PixHDModel(BaseModel):
             for i in range(self.opt.num_D):
                 for j in range(len(pred_fake[i]) - 1):
                     loss_G_GAN_Feat += D_weights * feat_weights * \
-                                       self.criterionFeat(pred_fake[i][j],
+                                       self.criterionMSE(pred_fake[i][j],
                                                           pred_real[i][j].detach()) * self.opt.lambda_feat
 
         # VGG feature matching loss
@@ -210,7 +210,7 @@ class Pix2PixHDModel(BaseModel):
             loss_G_VGG = self.criterionVGG(fake_image, real_image) * self.opt.lambda_feat * 0.01
         # loss_G_rec = (self.criterionL1(fake_image, real_image) + 0.1 * self.criterionLPIPS(fake_image,real_image)) \
         #              * self.opt.lambda_feat
-        loss_G_rec = (self.criterionLAP(fake_image, real_image)+0.1*self.criterionSSIM(fake_image, real_image))*0.1 +self.criterionL1(fake_image, real_image)* self.opt.lambda_feat
+        loss_G_rec = (self.criterionLAP(fake_image, real_image)+0.1*self.criterionSSIM(fake_image, real_image))*0.1 +self.criterionMSE(fake_image, real_image)* self.opt.lambda_feat
         # Only return the fake_B image if necessary to save BW
         return [self.loss_filter(loss_G_rec, loss_G_GAN, loss_G_GAN_Feat, loss_G_VGG, loss_D_real, loss_D_fake),
                 None if not infer else fake_image]

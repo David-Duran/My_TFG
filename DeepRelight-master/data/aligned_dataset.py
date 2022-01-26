@@ -13,7 +13,7 @@ from data.base_dataset import BaseDataset, get_params, get_transform, normalize
 from data.image_folder import make_dataset
 import random
 
-
+base_directory = "/home/dduran/My_TFG/DeepRelight-master/"
 class TraindataFromTrack3(data.Dataset):
     def initialize(self, opt):
         return
@@ -21,7 +21,7 @@ class TraindataFromTrack3(data.Dataset):
     def __init__(self):
         super(TraindataFromTrack3, self).__init__()
 
-        self.image_folder = "datasets/track3_train"
+        self.image_folder = base_directory + "datasets/track3_train"
         self.image_filenames_input = [join(self.image_folder, x) for x in listdir(self.image_folder) if
                                       self.is_image_file(x)]
 
