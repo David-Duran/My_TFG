@@ -288,19 +288,24 @@ class BP_HDR(nn.Module):
         self.decoder = nn.Sequential(*Decoder)
 
         #self.dropout = nn.Dropout(0.85)
-        self.shortconect = nn.Sequential(nn.ReflectionPad2d(1), nn.Conv2d(ngf*2, ngf, kernel_size=3, padding=0), nn.ReLU())
+        self.shortconect = nn.Sequential(nn.ReflectionPad2d(1), nn.Conv2d(ngf, ngf, kernel_size=3, padding=0), nn.ReLU())
         self.out = nn.Sequential(nn.ReflectionPad2d(3), nn.Conv2d(ngf, output_nc, kernel_size=7, padding=0), nn.Tanh())
 
 
     def forward(self, input):
-        m_in = self.inlayer(input)
-        m = self.encoder(m_in)
+        m = self.inlayer(input)
+        s = [m]
+        for down in self.encoder:
+            m = down(m)
+            s.append(m)
+        s = reversed(s[:-1])
         m = self.manipulate(m)
-        m = self.decoder(m)
-        #m = self.dropout(m)
-        m = torch.cat([m_in,m],dim=1)
+        for up, sk in zip(self.decoder, s):
+            m = up(m)
+            m = torch.mean(torch.stack([sk,m]),dim=0)
+        # m = self.dropout(m)
         m = self.shortconect(m)
-        #out = self.out(m)
+        # out = self.out(m)
         return m
 
     # Define a resnet block
@@ -622,8 +627,8 @@ class Vgg19(torch.nn.Module):
         h_relu1 = self.slice1(X)
         h_relu2 = self.slice2(h_relu1)
         h_relu3 = self.slice3(h_relu2)
-        h_relu4 = self.slice4(h_relu3)
-        h_relu5 = self.slice5(h_relu4)
+        #h_relu4 = self.slice4(h_relu3)
+        #h_relu5 = self.slice5(h_relu4)
         #out = [h_relu1, h_relu2, h_relu3, h_relu4, h_relu5]
-        out = [h_relu1, h_relu2, h_relu3, h_relu4, h_relu5]
+        out = [h_relu1, h_relu2, h_relu3] #, h_relu4, h_relu5]
         return out
